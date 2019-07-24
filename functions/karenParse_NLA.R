@@ -36,14 +36,24 @@ karenOrganizationShiny <- function(pathlist,filelist){
 
 karenWriteShiny <- function(filelist, finalList){
   # Create the first part of the filename for writing to a .csv file, based on visit info and sample type
-#  subName.out <- str_extract(paste(path,filelist[1],sep='/'),"[:alnum:]+\\_[:alpha:]+\\_[:alnum:]+\\_[:alnum:]\\_")
   subName.out <- str_extract(filelist[1],"[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_")
   print(subName.out)
-  #if( fileFormat == '.xlsx'){
-    objLen <- map(finalList, length)
-    specialCases <- names(objLen[objLen>2]) # deal with list objects with > 2 separately
+  
+   # objName <- map(finalList, length)
+    specialCases <- names(finalList)[substring(names(finalList),1,4)=='PHAB']
+    #  names(objLen[objLen>2]) # deal with list objects with > 2 separately
     
-    others <- finalList[!(names(finalList) %in% specialCases)]
+    for(i in 1:length(specialCases)){
+      names(finalList)[names(finalList)==specialCases[i]] <- 'PHAB'
+    }
+    
+    others <- finalList[!(names(finalList)=='PHAB')]
+    
+    phab_all <- finalList[names(finalList)=='PHAB'] %>%
+      map_df('PHAB')
+    
+    phab <- list(PHAB=phab_all)
+        #   map_df('PHAB')
     # phab_channel <- finalList[specialCases] %>%
     #   map_df('channel') 
     # phab_chanrip <- finalList[specialCases] %>%
@@ -57,7 +67,7 @@ karenWriteShiny <- function(filelist, finalList){
     # phab <- list(PHAB_channel = phab_channel, PHAB_chanrip = phab_chanrip, PHAB_chanxsec = phab_chanxsec, PHAB_littoral = phab_littoral, PHAB_thalweg = phab_thalweg)
     meta <- list(Metadata = metadata)
     
-    return(c(map(others,1),meta))
+    return(c(map(others,1),phab,meta))
 
 }
 

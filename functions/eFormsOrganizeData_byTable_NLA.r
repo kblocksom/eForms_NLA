@@ -31,8 +31,12 @@ eFormsOrganize_byTable <- function(rawData){
   )
   
   ss <- list(cbind(visitinfo, rr))
+  if(sampletype=='PHAB'){
+    names(ss) <- c('PHAB')
+  }
     # Add new object to list with sample type name
   ss[["SAMPLE_TYPE"]] <- sampletype
+  
   return(ss)
 }
 
@@ -151,7 +155,13 @@ organizePhab <- function(parsedIn){
   }else{
     cc <- aa
   }
-    
+   
+  # outdf <- list(cc)
+  # # Assign names to each object (data frame) in list
+  # names(outdf) <- c('PHAB') 
+  # 
+  # return(outdf)
+  
   return(cc)
   
 }
