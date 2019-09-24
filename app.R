@@ -117,7 +117,7 @@ server <- function(input, output, session) {
   # Download CSV
   
   output$downloadcsv <- downloadHandler( filename = function() {
-    paste(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_"), "csvFiles.zip", sep="")
+    paste(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_"), "csvFiles.zip", sep="")
   },
   content = function(fname) {
     fs <- c()
@@ -125,7 +125,7 @@ server <- function(input, output, session) {
     z <- karenWriteShiny(as.vector(input$directory$name), userData$finalOut) 
     
     for (i in 1:length(z)) {
-      path <- paste0(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_"),
+      path <- paste0(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_"),
                      names(z)[[i]], ".csv")
       fs <- c(fs, path)
       write.csv(data.frame(z[[i]]), path, row.names=F)
@@ -146,7 +146,7 @@ server <- function(input, output, session) {
   # Send input data to html report
   
   output$report <- downloadHandler(
-    paste(unique(userData$finalOut[[1]][[1]]$SITE_ID),unique(userData$finalOut[[1]][[1]]$VISIT_NO),"LandownerReport.html",sep="_"),
+    paste(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_"),"LandownerReport.html",sep="_"),
     content= function(file){
       tempReport <- normalizePath('landownerReport_fromApp.Rmd')
       imageToSend1 <- normalizePath('NLA logo_sm.jpg')  # choose image name
