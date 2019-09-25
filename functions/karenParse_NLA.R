@@ -23,8 +23,8 @@ karenOrganizationShiny <- function(pathlist,filelist){
     # This step parses data and then organizes data in each file
     if(str_detect(fileName,'SHIPPING|TRACKING',negate=TRUE)){
     finalOut[[fileName %>% 
-                str_replace("[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_",'') %>%
-                str_replace('.json*','') %>% 
+                str_replace("[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_",'') %>%
+                str_replace('.json*|.JSON*','') %>% 
                 str_replace('.*/','') ]] <- eFormsParseJSON(filePath) %>%
       eFormsOrganize_byTable()  
     }
@@ -36,7 +36,7 @@ karenOrganizationShiny <- function(pathlist,filelist){
 
 karenWriteShiny <- function(filelist, finalList){
   # Create the first part of the filename for writing to a .csv file, based on visit info and sample type
-  subName.out <- str_extract(filelist[1],"[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_")
+  subName.out <- str_extract(filelist[1],"[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_")
   print(subName.out)
   
    # objName <- map(finalList, length)

@@ -107,7 +107,7 @@ server <- function(input, output, session) {
   
   # Download Excel File
   output$downloadxlsx<- downloadHandler(filename = function() { 
-    paste(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_"),
+    paste(str_extract(filesInDir()[1],"[:alnum:]+\\_[:alnum:]+\\-[:alnum:]+\\_[:alnum:]+\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_"),
           "summary.xlsx")},
     content = function(file) {
       write_xlsx(karenWriteShiny(as.vector(input$directory$name), userData$finalOut), path = file)}
