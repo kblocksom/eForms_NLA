@@ -45,41 +45,88 @@ eFormsOrganize_byTable <- function(rawData){
 
 organizeVerification <- function(parsedIn){
 # Simply melt these data and clean up parameter names
-  aa <- mutate(parsedIn, SAMPLE_TYPE='VERIF') %>%
-    melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-    mutate(PARAMETER=gsub('VERIFICATION\\.', '', PARAMETER)) %>%
-    select(SAMPLE_TYPE, PARAMETER, RESULT) 
-    
-  return(aa)
+  aa <- parsedIn
+  aa$SAMPLE_TYPE <- 'VERIF'
+  
+  varLong <- names(parsedIn)
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'PARAMETER', direction = 'long')
+  aa.long$PARAMETER <- with(aa.long, gsub('VERIFICATION\\.', '', PARAMETER))
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
+  
+  return(aa.out)
+  
+  # aa <- mutate(parsedIn, SAMPLE_TYPE='VERIF') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
+  #   mutate(PARAMETER=gsub('VERIFICATION\\.', '', PARAMETER)) %>%
+  #   select(SAMPLE_TYPE, PARAMETER, RESULT) 
+  #   
+  # return(aa)
 }
 
 organizeIndex <- function(parsedIn){
   # Simply melt these data by SAMPLE_TYPE and clean up parameter names
-  aa <- mutate(parsedIn, SAMPLE_TYPE='INDEX_SAMPLE') %>%
-    melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-    filter(str_detect(variable,'REVIEW',negate=TRUE)) %>%
-    mutate(SAMPLE_TYPE=substring(as.character(variable),14,17), 
-           PARAMETER=substring(as.character(variable),19,nchar(as.character(variable)))) %>%
-    select(SAMPLE_TYPE, PARAMETER, RESULT)
+  aa <- parsedIn
+  aa$SAMPLE_TYPE <- 'INDEX_SAMPLE'
   
-  return(aa)
+  varLong <- names(parsedIn)
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'variable', direction = 'long')
+  aa.long <- subset(aa.long, !str_detect(variable, 'REVIEW'))
+  aa.long$SAMPLE_TYPE <- with(aa.long, substring(as.character(variable),14,17))
+  aa.long$PARAMETER <- with(aa.long, substring(as.character(variable),19,nchar(as.character(variable))))
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
+  
+  # aa <- mutate(parsedIn, SAMPLE_TYPE='INDEX_SAMPLE') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
+  #   filter(str_detect(variable,'REVIEW',negate=TRUE)) %>%
+  #   mutate(SAMPLE_TYPE=substring(as.character(variable),14,17), 
+  #          PARAMETER=substring(as.character(variable),19,nchar(as.character(variable)))) %>%
+  #   select(SAMPLE_TYPE, PARAMETER, RESULT)
+  
+  return(aa.out)
 }
 
 organizeLittoral <- function(parsedIn){
   # Simply melt these data by SAMPLE_TYPE and clean up parameter names
-  aa <- subset(parsedIn, select = str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.BENT')) %>%
-    mutate(SAMPLE_TYPE='BENT') %>%
-    melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-    mutate(PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.BENT\\_',''),STATION='ALL') %>%
-    select(SAMPLE_TYPE, STATION, PARAMETER, RESULT)
+  aa <- subset(parsedIn, select = str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.BENT'))
+  aa$SAMPLE_TYPE <- 'BENT'
   
-  bb <- subset(parsedIn, select= str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.[:alpha:]\\_SUBBENT')) %>%
-    mutate(SAMPLE_TYPE='SUBBENT') %>%
-    melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
-    mutate(STATION=substring(variable,17,17),PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.[:alpha:]\\_SUBBENT\\_','')) %>%
-    select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
+  varLong <- names(aa)[names(aa)!='SAMPLE_TYPE']
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'variable', direction = 'long')
+  aa.long$PARAMETER <- with(aa.long, str_replace(variable,'LITTORAL\\_SAMPLE\\.BENT\\_',''))
+  aa.long$STATION <- 'ALL'
   
-  cc <- rbind(aa,bb)
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
+  
+  # aa <- subset(parsedIn, select = str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.BENT')) %>%
+  #   mutate(SAMPLE_TYPE='BENT') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
+  #   mutate(PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.BENT\\_',''),STATION='ALL') %>%
+  #   select(SAMPLE_TYPE, STATION, PARAMETER, RESULT)
+  
+  bb <- subset(parsedIn, select= str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.[:alpha:]\\_SUBBENT'))
+  bb$SAMPLE_TYPE <- 'SUBBENT'
+  
+  varLong <- names(bb)[names(bb)!='SAMPLE_TYPE']
+  bb.long <- reshape(bb, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'variable', direction = 'long')
+  bb.long$STATION <- with(bb.long, substring(variable,17,17))
+  bb.long$PARAMETER <- with(bb.long, str_replace(variable,'LITTORAL\\_SAMPLE\\.[:alpha:]\\_SUBBENT\\_',''))
+  
+  bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
+  
+  # bb <- subset(parsedIn, select= str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.[:alpha:]\\_SUBBENT')) %>%
+  #   mutate(SAMPLE_TYPE='SUBBENT') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
+  #   mutate(STATION=substring(variable,17,17),PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.[:alpha:]\\_SUBBENT\\_','')) %>%
+  #   select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
+ 
+  cc <- rbind(aa.out, bb.out) 
+  # cc <- rbind(aa,bb)
   
   return(cc)
 }
@@ -87,36 +134,71 @@ organizeLittoral <- function(parsedIn){
 organizeAssessment <- function(parsedIn){
   
   # Simply melt data and clean up parameter names
-  aa <- mutate(parsedIn, SAMPLE_TYPE='ASSESS') %>%
-    melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-    mutate(PARAMETER=gsub('ASSESSMENT\\.', '', PARAMETER)) %>%
-    select(SAMPLE_TYPE, PARAMETER, RESULT)
+  aa <- parsedIn
+  aa$SAMPLE_TYPE <- 'ASSESS'
   
-  return(aa)
+  varLong <- names(parsedIn)
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'PARAMETER', direction = 'long')
+  aa.long$PARAMETER <- with(aa.long, gsub('ASSESSMENT\\.', '', PARAMETER))
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
+  
+  # aa <- mutate(parsedIn, SAMPLE_TYPE='ASSESS') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
+  #   mutate(PARAMETER=gsub('ASSESSMENT\\.', '', PARAMETER)) %>%
+  #   select(SAMPLE_TYPE, PARAMETER, RESULT)
+  
+  return(aa.out)
   
 }
 
 organizeProfile <- function(parsedIn){
  # NEED TO FIND PARAMETERS THAT START WITH CHARACTER VS. NUMBER
-  aa <- mutate(parsedIn, SAMPLE_TYPE='PROF') %>%
-    subset(select=str_detect(names(parsedIn), 'F1')==FALSE) %>%
-    melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-    mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
-    mutate(LINE=str_replace(LINE,"\\_",""),PARAMETER=str_replace(variable,"[:digit:]+\\_",'')) %>%
-    select(SAMPLE_TYPE,LINE,PARAMETER,RESULT)
+  aa <- subset(parsedIn, select=str_detect(names(parsedIn), 'F1')==FALSE)
+  aa$SAMPLE_TYPE <- 'PROF'
+  
+  varLong <- names(aa)[names(aa)!='SAMPLE_TYPE']
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'variable', direction = 'long')
+  aa.long$variable <- with(aa.long, str_replace(variable, "PROFILE\\_DATA\\.",""))
+  aa.long$LINE <- with(aa.long, str_extract(variable,'[:digit:]+\\_'))
+  aa.long$LINE <- with(aa.long, str_replace(LINE,"\\_",""))
+  aa.long$PARAMETER <- with(aa.long, str_replace(variable,"[:digit:]+\\_",''))
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','LINE','PARAMETER','RESULT'))
+  
+  # aa <- mutate(parsedIn, SAMPLE_TYPE='PROF') %>%
+  #   subset(select=str_detect(names(parsedIn), 'F1')==FALSE) %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
+  #   mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
+  #   mutate(LINE=str_replace(LINE,"\\_",""),PARAMETER=str_replace(variable,"[:digit:]+\\_",'')) %>%
+  #   select(SAMPLE_TYPE,LINE,PARAMETER,RESULT)
   
   bb <- subset(parsedIn, select=str_detect(names(parsedIn),'F1')) 
   
   if(ncol(bb) > 0){
-    bb <- mutate(bb, SAMPLE_TYPE='PROF') %>%
-      melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
-      mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
-      mutate(LINE=str_replace(LINE,"\\_","")) %>%
-      select(SAMPLE_TYPE,LINE,COMMENT)
+    bb$SAMPLE_TYPE <- 'PROF'
+    
+    varLong <- names(bb)[names(bb)!='SAMPLE_TYPE']
+    bb.long <- reshape(bb, idvar = 'SAMPLE_TYPE', varying = varLong, times = varLong,
+                       v.names = 'COMMENT', timevar = 'variable', direction = 'long')
+    bb.long$variable <- with(bb.long, str_replace(variable, "PROFILE\\_DATA\\.",""))
+    bb.long$LINE <- with(bb.long, str_extract(variable,'[:digit:]+\\_'))
+    bb.long$LINE <- with(bb.long, str_replace(LINE,"\\_",""))
+    
+    bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','LINE','COMMENT'))
+    
+    # bb <- mutate(bb, SAMPLE_TYPE='PROF') %>%
+    #   melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
+    #   mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
+    #   mutate(LINE=str_replace(LINE,"\\_","")) %>%
+    #   select(SAMPLE_TYPE,LINE,COMMENT)
    
-    cc <- merge(aa,bb,by=c('SAMPLE_TYPE','LINE'),all=TRUE) 
+    cc <- merge(aa.out, bb.out, by=c('SAMPLE_TYPE','LINE'), all=TRUE) 
+    # cc <- merge(aa,bb,by=c('SAMPLE_TYPE','LINE'),all=TRUE) 
   }else{
-    cc <- aa
+    cc <- aa.out
   }
   
   return(cc)
@@ -125,42 +207,70 @@ organizeProfile <- function(parsedIn){
 
 organizeCalibration <- function(parsedIn){
   # Simply melt data and clean up parameter names
-  aa <- mutate(parsedIn, SAMPLE_TYPE='CALIB') %>%
-    melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-    mutate(PARAMETER=gsub('PROFILE\\_CALIBRATION\\.', '', PARAMETER),LINE='0') %>%
-    select(SAMPLE_TYPE, LINE, PARAMETER, RESULT)
+  aa <- parsedIn
+  aa$SAMPLE_TYPE <- 'CALIB'
   
-  return(aa)  
+  varLong <- names(parsedIn)
+  aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'PARAMETER')
+  aa.long$PARAMETER <- with(aa.long, gsub('PROFILE\\_CALIBRATION\\.', '', PARAMETER))
+  aa.long$LINE <- '0'
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','LINE','PARAMETER','RESULT'))
+  
+  # aa <- mutate(parsedIn, SAMPLE_TYPE='CALIB') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
+  #   mutate(PARAMETER=gsub('PROFILE\\_CALIBRATION\\.', '', PARAMETER),LINE='0') %>%
+  #   select(SAMPLE_TYPE, LINE, PARAMETER, RESULT)
+  
+  return(aa.out)  
   
 }
 
 organizePhab <- function(parsedIn){
   
-  aa <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')==FALSE) %>%
-    mutate(SAMPLE_TYPE='PHAB') %>%
-    melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
-    mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
-    select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
+  aa <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')==FALSE)
+  aa$SAMPLE_TYPE <- 'PHAB'
+  
+  varLong <- names(aa)[names(aa)!='SAMPLE_TYPE']
+  aa.long <- reshape(aa, idvar = 'SAMPLE_TYPE', varying = varLong, times = varLong,
+                     v.names = 'RESULT', timevar = 'variable', direction = 'wide')
+  aa.long$STATION <- with(aa.long, substring(variable,6,6))
+  aa.long$PARAMETER <- with(aa.long, str_replace(variable,'PHAB\\_[:alpha:]\\.',''))
+  
+  aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
+  
+  # aa <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')==FALSE) %>%
+  #   mutate(SAMPLE_TYPE='PHAB') %>%
+  #   melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
+  #   mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
+  #   select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
     
   bb <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')) 
   
   if(ncol(bb) > 0){
-    bb <- mutate(bb, SAMPLE_TYPE='PHAB') %>%
-      melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
-      mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
-      mutate(PARAMETER=str_replace(PARAMETER,'\\_COMMENT','')) %>%
-      select(SAMPLE_TYPE,STATION,PARAMETER,COMMENT)
+    bb$SAMPLE_TYPE <- 'PHAB'
     
-    cc <- merge(aa,bb,by=c('SAMPLE_TYPE','STATION','PARAMETER'),all=T)
+    varLong <- names(bb)[names(bb)!='SAMPLE_TYPE']
+    bb.long <- reshape(bb, idvar = 'SAMPLE_TYPE', varying = varLong, times = varLong,
+                       v.names = 'COMMENT', timevar = 'variable', direction = 'long')
+    bb.long$STATION <- with(bb.long, substring(variable,6,6))
+    bb.long$PARAMETER <- with(bb.long, str_replace(variable,'PHAB\\_[:alpha:]\\.',''))
+    bb.long$PARAMETER <- with(bb.long, str_replace(PARAMETER,'\\_COMMENT',''))
+    
+    bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','COMMENT'))
+    
+    # bb <- mutate(bb, SAMPLE_TYPE='PHAB') %>%
+    #   melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
+    #   mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
+    #   mutate(PARAMETER=str_replace(PARAMETER,'\\_COMMENT','')) %>%
+    #   select(SAMPLE_TYPE,STATION,PARAMETER,COMMENT)
+    
+    cc <- merge(aa.out, bb.out, by=c('SAMPLE_TYPE','STATION','PARAMETER'), all=T)
+    # cc <- merge(aa,bb,by=c('SAMPLE_TYPE','STATION','PARAMETER'),all=T)
   }else{
-    cc <- aa
+    cc <- aa.out
   }
-   
-  # outdf <- list(cc)
-  # # Assign names to each object (data frame) in list
-  # names(outdf) <- c('PHAB') 
-  # 
-  # return(outdf)
   
   return(cc)
   
