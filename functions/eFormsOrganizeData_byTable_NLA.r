@@ -212,7 +212,7 @@ organizeCalibration <- function(parsedIn){
   
   varLong <- names(parsedIn)
   aa.long <- reshape(aa, idvar = c('SAMPLE_TYPE'), varying = varLong, times = varLong,
-                     v.names = 'RESULT', timevar = 'PARAMETER')
+                     v.names = 'RESULT', timevar = 'PARAMETER', direction = 'long')
   aa.long$PARAMETER <- with(aa.long, gsub('PROFILE\\_CALIBRATION\\.', '', PARAMETER))
   aa.long$LINE <- '0'
   
@@ -234,7 +234,7 @@ organizePhab <- function(parsedIn){
   
   varLong <- names(aa)[names(aa)!='SAMPLE_TYPE']
   aa.long <- reshape(aa, idvar = 'SAMPLE_TYPE', varying = varLong, times = varLong,
-                     v.names = 'RESULT', timevar = 'variable', direction = 'wide')
+                     v.names = 'RESULT', timevar = 'variable', direction = 'long')
   aa.long$STATION <- with(aa.long, substring(variable,6,6))
   aa.long$PARAMETER <- with(aa.long, str_replace(variable,'PHAB\\_[:alpha:]\\.',''))
   

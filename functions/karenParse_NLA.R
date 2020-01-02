@@ -47,8 +47,10 @@ karenWriteShiny <- function(filelist, finalList){
     
     others <- finalList[!(names(finalList)=='PHAB')]
     
-    phab_all <- finalList[names(finalList)=='PHAB'] %>%
-      map_df('PHAB')
+    phab_all <- finalList[names(finalList)=='PHAB']
+    phab_all <- map_df(phab_all, 'PHAB')
+    # phab_all <- finalList[names(finalList)=='PHAB'] %>%
+    #   map_df('PHAB')
     
     phab <- list(PHAB=phab_all)
     meta <- list(Metadata = metadata)
