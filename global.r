@@ -1,6 +1,6 @@
 library(shiny)
 library(shinyjs)
-library(dplyr)
+library(magrittr)
 library(purrr)
 library(RJSONIO)
 library(stringr)
