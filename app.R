@@ -9,7 +9,7 @@
 source('global.r')
 
 ui <- fluidPage(
-  
+  theme='style.css',
   shinyjs::useShinyjs(),
   # Application title
   navbarPage("NLA 2017 Rapid Data Extraction and Reporting Tool, version 1.1",

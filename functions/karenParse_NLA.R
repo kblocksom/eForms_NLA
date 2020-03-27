@@ -21,11 +21,6 @@ karenOrganizationShiny <- function(pathlist,filelist){
       
       finalOut[[fileName]] <- tt
       
-    # finalOut[[fileName %>% 
-    #             str_replace("[:alnum:]+\\_[:alpha:]+\\-[:alnum:]+\\_[:alnum:]\\_|[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_[:alnum:]+\\_",'') %>%
-    #             str_replace('.json*|.JSON*','') %>% 
-    #             str_replace('.*/','') ]] <- eFormsParseJSON(filePath) %>%
-    #   eFormsOrganize_byTable()  
     }
   }
   
@@ -49,9 +44,7 @@ karenWriteShiny <- function(filelist, finalList){
     
     phab_all <- finalList[names(finalList)=='PHAB']
     phab_all <- map_df(phab_all, 'PHAB')
-    # phab_all <- finalList[names(finalList)=='PHAB'] %>%
-    #   map_df('PHAB')
-    
+ 
     phab <- list(PHAB=phab_all)
     meta <- list(Metadata = metadata)
     

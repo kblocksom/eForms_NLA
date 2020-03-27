@@ -56,13 +56,6 @@ organizeVerification <- function(parsedIn){
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
   
   return(aa.out)
-  
-  # aa <- mutate(parsedIn, SAMPLE_TYPE='VERIF') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-  #   mutate(PARAMETER=gsub('VERIFICATION\\.', '', PARAMETER)) %>%
-  #   select(SAMPLE_TYPE, PARAMETER, RESULT) 
-  #   
-  # return(aa)
 }
 
 organizeIndex <- function(parsedIn){
@@ -78,13 +71,6 @@ organizeIndex <- function(parsedIn){
   aa.long$PARAMETER <- with(aa.long, substring(as.character(variable),19,nchar(as.character(variable))))
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
-  
-  # aa <- mutate(parsedIn, SAMPLE_TYPE='INDEX_SAMPLE') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-  #   filter(str_detect(variable,'REVIEW',negate=TRUE)) %>%
-  #   mutate(SAMPLE_TYPE=substring(as.character(variable),14,17), 
-  #          PARAMETER=substring(as.character(variable),19,nchar(as.character(variable)))) %>%
-  #   select(SAMPLE_TYPE, PARAMETER, RESULT)
   
   return(aa.out)
 }
@@ -102,12 +88,6 @@ organizeLittoral <- function(parsedIn){
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
   
-  # aa <- subset(parsedIn, select = str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.BENT')) %>%
-  #   mutate(SAMPLE_TYPE='BENT') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-  #   mutate(PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.BENT\\_',''),STATION='ALL') %>%
-  #   select(SAMPLE_TYPE, STATION, PARAMETER, RESULT)
-  
   bb <- subset(parsedIn, select= str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.[:alpha:]\\_SUBBENT'))
   bb$SAMPLE_TYPE <- 'SUBBENT'
   
@@ -119,15 +99,8 @@ organizeLittoral <- function(parsedIn){
   
   bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
   
-  # bb <- subset(parsedIn, select= str_starts(names(parsedIn),'LITTORAL_SAMPLE\\.[:alpha:]\\_SUBBENT')) %>%
-  #   mutate(SAMPLE_TYPE='SUBBENT') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
-  #   mutate(STATION=substring(variable,17,17),PARAMETER=str_replace(variable,'LITTORAL\\_SAMPLE\\.[:alpha:]\\_SUBBENT\\_','')) %>%
-  #   select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
- 
   cc <- rbind(aa.out, bb.out) 
-  # cc <- rbind(aa,bb)
-  
+
   return(cc)
 }
 
@@ -143,12 +116,7 @@ organizeAssessment <- function(parsedIn){
   aa.long$PARAMETER <- with(aa.long, gsub('ASSESSMENT\\.', '', PARAMETER))
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','PARAMETER','RESULT'))
-  
-  # aa <- mutate(parsedIn, SAMPLE_TYPE='ASSESS') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-  #   mutate(PARAMETER=gsub('ASSESSMENT\\.', '', PARAMETER)) %>%
-  #   select(SAMPLE_TYPE, PARAMETER, RESULT)
-  
+
   return(aa.out)
   
 }
@@ -168,13 +136,6 @@ organizeProfile <- function(parsedIn){
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','LINE','PARAMETER','RESULT'))
   
-  # aa <- mutate(parsedIn, SAMPLE_TYPE='PROF') %>%
-  #   subset(select=str_detect(names(parsedIn), 'F1')==FALSE) %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), value.name='RESULT') %>%
-  #   mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
-  #   mutate(LINE=str_replace(LINE,"\\_",""),PARAMETER=str_replace(variable,"[:digit:]+\\_",'')) %>%
-  #   select(SAMPLE_TYPE,LINE,PARAMETER,RESULT)
-  
   bb <- subset(parsedIn, select=str_detect(names(parsedIn),'F1')) 
   
   if(ncol(bb) > 0){
@@ -189,14 +150,7 @@ organizeProfile <- function(parsedIn){
     
     bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','LINE','COMMENT'))
     
-    # bb <- mutate(bb, SAMPLE_TYPE='PROF') %>%
-    #   melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
-    #   mutate(variable = str_replace(variable, "PROFILE\\_DATA\\.",""), LINE=str_extract(variable,'[:digit:]+\\_')) %>%
-    #   mutate(LINE=str_replace(LINE,"\\_","")) %>%
-    #   select(SAMPLE_TYPE,LINE,COMMENT)
-   
     cc <- merge(aa.out, bb.out, by=c('SAMPLE_TYPE','LINE'), all=TRUE) 
-    # cc <- merge(aa,bb,by=c('SAMPLE_TYPE','LINE'),all=TRUE) 
   }else{
     cc <- aa.out
   }
@@ -217,12 +171,7 @@ organizeCalibration <- function(parsedIn){
   aa.long$LINE <- '0'
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','LINE','PARAMETER','RESULT'))
-  
-  # aa <- mutate(parsedIn, SAMPLE_TYPE='CALIB') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'), variable.name='PARAMETER', value.name='RESULT') %>%
-  #   mutate(PARAMETER=gsub('PROFILE\\_CALIBRATION\\.', '', PARAMETER),LINE='0') %>%
-  #   select(SAMPLE_TYPE, LINE, PARAMETER, RESULT)
-  
+
   return(aa.out)  
   
 }
@@ -240,12 +189,6 @@ organizePhab <- function(parsedIn){
   
   aa.out <- subset(aa.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','RESULT'))
   
-  # aa <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')==FALSE) %>%
-  #   mutate(SAMPLE_TYPE='PHAB') %>%
-  #   melt(id.vars=c('SAMPLE_TYPE'),value.name='RESULT') %>%
-  #   mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
-  #   select(SAMPLE_TYPE,STATION,PARAMETER,RESULT)
-    
   bb <- subset(parsedIn, select=str_detect(names(parsedIn),'COMMENT')) 
   
   if(ncol(bb) > 0){
@@ -260,14 +203,7 @@ organizePhab <- function(parsedIn){
     
     bb.out <- subset(bb.long, select = c('SAMPLE_TYPE','STATION','PARAMETER','COMMENT'))
     
-    # bb <- mutate(bb, SAMPLE_TYPE='PHAB') %>%
-    #   melt(id.vars=c('SAMPLE_TYPE'),value.name='COMMENT') %>%
-    #   mutate(STATION=substring(variable,6,6),PARAMETER=str_replace(variable,'PHAB\\_[:alpha:]\\.','')) %>%
-    #   mutate(PARAMETER=str_replace(PARAMETER,'\\_COMMENT','')) %>%
-    #   select(SAMPLE_TYPE,STATION,PARAMETER,COMMENT)
-    
     cc <- merge(aa.out, bb.out, by=c('SAMPLE_TYPE','STATION','PARAMETER'), all=T)
-    # cc <- merge(aa,bb,by=c('SAMPLE_TYPE','STATION','PARAMETER'),all=T)
   }else{
     cc <- aa.out
   }
